@@ -5,6 +5,8 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 import org.zerock.moviereview.dto.MovieDTO;
 import org.zerock.moviereview.dto.MovieImageDTO;
+import org.zerock.moviereview.dto.PageRequestDTO;
+import org.zerock.moviereview.dto.PageResultDTO;
 import org.zerock.moviereview.entity.Movie;
 import org.zerock.moviereview.entity.MovieImage;
 import org.zerock.moviereview.repository.MovieRepository;
@@ -17,6 +19,31 @@ import java.util.stream.Collectors;
 public interface MovieService {
 
     Long register(MovieDTO movieDTO);
+
+    PageResultDTO<MovieDTO, Object[]> getList(PageRequestDTO requestDTO);
+
+    default MovieDTO entitiesToDTO(Movie movie, List<MovieImage> movieImages, Double avg, Long reviewCnt){
+        MovieDTO movieDTO = MovieDTO.builder()
+                .mno(movie.getMno())
+                .title(movie.getTitle())
+                .regDate(movie.getRegDate())
+                .modDate(movie.getModDate())
+                .build();
+
+        List<MovieImageDTO> movieImageDTOList = movieImages.stream().map(movieImage -> {
+            return MovieImageDTO.builder().imgName(movieImage.getImgName())
+                    .path(movieImage.getPath())
+                    .uuid(movieImage.getUuid())
+                    .build();
+        }).collect(Collectors.toList());
+
+        movieDTO.setImageDTOList(movieImageDTOList);
+        movieDTO.setAvg(avg);
+        movieDTO.setReviewCnt(reviewCnt.intValue());
+
+        return movieDTO;
+
+    }
 
     default Map<String, Object> dtoToEntity(MovieDTO movieDTO){
 
